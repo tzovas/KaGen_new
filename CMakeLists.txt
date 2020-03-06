@@ -27,7 +27,7 @@ endif()
 option(KAGEN_USE_LTO "Compile with -flto (link-time optimization)." OFF)
 
 option(KAGEN_OUTPUT_EDGES "Output edge list." ON)
-option(KAGEN_SINGLE_OUTPUT "Output single edge list." ON)
+option(KAGEN_SINGLE_OUTPUT "Output single edge list." OFF)
 option(KAGEN_OMIT_HEADER "Omit header in edge list" OFF)
 
 ################################################################################
@@ -289,6 +289,8 @@ macro(mpi_build TARGETNAME)
   add_executable(${TARGETNAME} ${ARGN})
   target_include_directories(${TARGETNAME} PUBLIC ${KAGEN_INCLUDE_DIRS})
   target_link_libraries(${TARGETNAME} ${KAGEN_LINK_LIBRARIES} ${MPI_LIBRARIES})
+  install( TARGETS ${TARGETNAME} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" )
+  message("install to " "${CMAKE_INSTALL_PREFIX}/bin" )
 endmacro(mpi_build)
 
 # macro for building a single-source thrill program

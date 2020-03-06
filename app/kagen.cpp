@@ -116,7 +116,16 @@ int main(int argn, char **argv) {
   PGeneratorConfig generator_config;
   ParseParameters(argn, argv, rank, size, generator_config);
 
-  if (rank == ROOT) OutputParameters(generator_config, rank, size);
+  std::string callingCommand = "";
+  for (int i = 0; i < argn; i++) {
+    callingCommand += std::string(argv[i]) + " ";
+  }  
+
+  if (rank == ROOT){
+    OutputParameters(generator_config, size);
+    std::cout<<"Calling command: " << callingCommand <<std::endl;
+    std::cout<<"Called with " << size << " MPI processes" << std::endl;
+  }
 
   // Statistics
   Statistics stats;
@@ -176,7 +185,8 @@ int main(int argn, char **argv) {
               << " time=" << stats.Avg() << " stddev=" << stats.Stddev()
               << " iterations=" << generator_config.iterations
               << " edges=" << edges.Avg()
-              << " time_per_edge=" << edge_stats.Avg() << std::endl;
+              << " time_per_edge=" << edge_stats.Avg() 
+              << " output stored in file " << generator_config.output_file << std::endl;
   }
 
   MPI_Finalize();
