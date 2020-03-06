@@ -161,6 +161,22 @@ void ParseParameters(int argn, char **argv,
 
   // I/O
   generator_config.output_file = args.Get<std::string>("output", "out");
+  generator_config.coord_file = args.Get<std::string>("coord_output", "coords");
+  generator_config.output_dir = args.Get<std::string>("output_dir", "./");
+
+  // if no output parameter is given, create file name automatically
+  bool isOutfileGiven = args.IsSet("output");
+  if( not isOutfileGiven){
+    generator_config.output_file = generator_config.generator + "_" + std::to_string(args.Get<ULONG>("n", 3))+".edgl";
+    generator_config.coord_file = generator_config.output_file+".xyz";
+  }
+  
+  bool givenDir = args.IsSet("output_dir");
+  if( givenDir){
+    generator_config.output_file = generator_config.output_dir + "/" + generator_config.output_file;
+    generator_config.coord_file = generator_config.output_dir+ "/" + generator_config.coord_file;
+  }
+
   generator_config.debug_output = args.Get<std::string>("debug", "dbg");
   generator_config.dist_size = args.Get<ULONG>("dist", 10);
 
