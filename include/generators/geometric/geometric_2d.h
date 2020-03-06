@@ -87,6 +87,8 @@ class Geometric2D {
   // std::vector<std::vector<Vertex>> vertices_;
   google::dense_hash_map<SInt, std::vector<Vertex>> vertices_;
 
+  GeneratorIO<std::tuple<LPFloat, LPFloat, SInt>> point_io_;
+
   void InitDatastructures() {
     // Chunk distribution
     SInt leftover_chunks = total_chunks_ % size_;
@@ -223,7 +225,7 @@ class Geometric2D {
     std::get<3>(chunk) = true;
   }
 
-  void GenerateVertices(const SInt chunk_id, const SInt cell_id) {
+  void GenerateVertices(const SInt chunk_id, const SInt cell_id, const bool neighborFlag = false) {
     // Lazily compute chunk
     if (chunks_.find(chunk_id) == end(chunks_)) ComputeChunk(chunk_id);
     auto &chunk = chunks_[chunk_id];
@@ -253,6 +255,9 @@ class Geometric2D {
       LPFloat y = mersenne.Random() * cell_size_ + start_y;
 
       cell_vertices.emplace_back(x, y, offset + i);
+      if (!neighborFlag) {
+        point_io_.PushEdge(x, y, offset + i);
+      }
       // fprintf(edge_file, "v %f %f\n", x, y);
     }
     std::get<3>(cell) = true;

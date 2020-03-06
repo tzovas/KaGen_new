@@ -37,7 +37,8 @@ class RGG2D : public Geometric2D {
 
   void Output() const override { 
 #ifdef OUTPUT_EDGES
-    io_.OutputEdges(); 
+    io_.OutputEdges();
+    point_io_.OutputEdges();
 #else
     io_.OutputDist(); 
 #endif

@@ -85,6 +85,8 @@ class Geometric3D {
   // std::vector<std::vector<Vertex>> vertices_;
   google::dense_hash_map<SInt, std::vector<Vertex>> vertices_;
 
+  GeneratorIO<std::tuple<LPFloat, LPFloat, LPFloat, SInt>> point_io_;
+
   virtual SInt computeNumberOfCells() const { return 1; };
 
   void InitDatastructures() {
@@ -277,7 +279,7 @@ class Geometric3D {
     std::get<4>(chunk) = true;
   }
 
-  void GenerateVertices(const SInt chunk_id, const SInt cell_id) {
+  void GenerateVertices(const SInt chunk_id, const SInt cell_id, const bool neighborFlag = false) {
     // Lazily compute chunk
     if (chunks_.find(chunk_id) == end(chunks_)) {
       ComputeChunk(chunk_id);
@@ -313,6 +315,9 @@ class Geometric3D {
       LPFloat z = mersenne_.Random() * cell_size_ + start_z;
 
       cell_vertices.emplace_back(x, y, z, offset + i);
+      if (!neighborFlag) {
+        point_io_.PushEdge(x, y, z, offset + i);
+      }
       // fprintf(edge_file, "v %f %f\n", x, y);
     }
     std::get<4>(cell) = true;

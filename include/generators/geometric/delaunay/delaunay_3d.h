@@ -71,6 +71,7 @@ public:
 #endif
 #ifdef OUTPUT_EDGES
     edge_io_.OutputEdges();
+    point_io_.OutputEdges();
 #else
     edge_io_.OutputDist();
 #endif
@@ -83,7 +84,7 @@ public:
 
 private:
   // I/O
-  GeneratorIO<std::tuple<LPFloat, LPFloat, LPFloat>> point_io_;
+  /*Kagen*/ //GeneratorIO<std::tuple<LPFloat, LPFloat, LPFloat>> point_io_;
   GeneratorIO<std::tuple<SInt, SInt>> edge_io_;
   EdgeCallback cb_;
 
@@ -135,7 +136,7 @@ private:
                      const SInt chunk_depth) override {
     SInt chunk_id = Encode(chunk_column, chunk_row, chunk_depth);
     SInt id_low = std::get<5>(chunks_[chunk_id]);
-    SInt id_high = id_low + std::get<0>(chunks_[chunk_id]);
+    [[maybe_unused]] SInt id_high = id_low + std::get<0>(chunks_[chunk_id]);
     //            CGALCairoPainter basePainter;
 
     Dt_3d tria;
@@ -326,7 +327,8 @@ private:
                   SInt neighbor_cell_offset =
                       ComputeGlobalCellId(neighbor_chunk_id, neighbor_cell_id);
                   // lazily generate vertices
-                  GenerateVertices(neighbor_chunk_id, neighbor_cell_id);
+                  const bool neighborFlag = true;
+                  GenerateVertices(neighbor_chunk_id, neighbor_cell_id, neighborFlag);
 
                   // Gather vertices
                   //                            printf("[%llu] adding %lu points
@@ -444,7 +446,7 @@ private:
       if(v1 == nullptr || v2 == nullptr)
           continue;
 
-        bool touches = false;
+        [[maybe_unused]] bool touches = false;
         if (!tria.is_infinite(v1) &&  !(v1->info() & COPY_FLAG)) {
             // v1 is in chunk we save the edge
             edge_io_.UpdateDist(v1->info());
@@ -511,7 +513,7 @@ private:
         };
 
         struct SpatialSortingTraits {
-            typedef Vertex Point_3;
+            [[maybe_unused]] typedef Vertex Point_3;
             typedef LessX Less_x_3;
             typedef LessY Less_y_3;
             typedef LessZ Less_z_3;

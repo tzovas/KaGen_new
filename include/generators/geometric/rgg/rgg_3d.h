@@ -38,6 +38,7 @@ class RGG3D : public Geometric3D {
   void Output() const override { 
 #ifdef OUTPUT_EDGES
     io_.OutputEdges(); 
+    point_io_.OutputEdges();
 #else
     io_.OutputDist(); 
 #endif
