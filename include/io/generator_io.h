@@ -67,6 +67,16 @@ class GeneratorIO {
     local_num_edges_++;
   }
 
+  inline void PushEdge(SInt v1, SInt v2){
+	if( v1 < v2){
+		edges_.emplace_back( std::make_tuple( v1, v2) );
+	}else{
+		edges_.emplace_back( std::make_tuple( v2, v1) );
+	}
+	//v1 > v2 ? edges_.emplace_back( std::make_tuple( v1, v2) ) : edges_.emplace_back( std::make_tuple( v2, v1) );
+    local_num_edges_++;
+  }
+  
   void OutputEdges() const { 
 #ifdef SINGLE_LIST
     GatherPrint(identity<Edge>());
