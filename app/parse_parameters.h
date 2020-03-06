@@ -19,14 +19,14 @@
 namespace kagen {
 
 void ParseParameters(int argn, char **argv,
-                     PEID, PEID size,
+                     PEID rank , PEID size,
                      PGeneratorConfig &generator_config) {
   ArgParser args(argn, argv);
 
   // Generator
   generator_config.generator = args.Get<std::string>("gen", "");
 
-  if (args.IsSet("help") || argn < 2) {
+  if ( (args.IsSet("help") || argn < 2) && rank==ROOT ){
     if (generator_config.generator == "") {
       std::cout << "================================================" << std::endl;
       std::cout << "==================== KaGen =====================" << std::endl;

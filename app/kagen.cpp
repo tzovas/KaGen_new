@@ -122,7 +122,7 @@ int main(int argn, char **argv) {
   }  
 
   if (rank == ROOT){
-    OutputParameters(generator_config, size);
+    OutputParameters(generator_config, rank, size);
     std::cout<<"Calling command: " << callingCommand <<std::endl;
     std::cout<<"Called with " << size << " MPI processes" << std::endl;
   }
