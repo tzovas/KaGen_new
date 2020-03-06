@@ -43,7 +43,7 @@ class Delaunay3D : public Geometric3D {
 public:
   Delaunay3D(PGeneratorConfig &config, const PEID rank,
              const EdgeCallback &cb)
-      : Geometric3D(config, rank), point_io_(config), edge_io_(config), cb_(cb) {
+      : Geometric3D(config, rank), edge_io_(config), cb_(cb) {
     // Chunk variables
     total_chunks_ = config_.k;
     chunks_per_dim_ = cbrt(config_.k);

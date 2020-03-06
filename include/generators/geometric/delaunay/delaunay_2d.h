@@ -92,7 +92,7 @@ class Delaunay2D : public Geometric2D {
 public:
   Delaunay2D(PGeneratorConfig &config, const PEID rank, 
              const EdgeCallback &cb)
-      : Geometric2D(config, rank), point_io_(config), edge_io_(config), cb_(cb) {
+      : Geometric2D(config, rank), edge_io_(config), cb_(cb) {
     // Chunk variables
     total_chunks_ = config_.k;
     chunks_per_dim_ = sqrt(total_chunks_);
