@@ -149,12 +149,59 @@ class GeneratorIO {
     FILE* fout =
         fopen((config_.output_file + "_" + std::to_string(rank)).c_str(), "w+");
 #ifndef OMIT_HEADER
-    fprintf(fout, "p %llu %lu\n", config_.n, total_num_edges);
+    fprintf(fout, "p %llu %llu\n", config_.n, total_num_edges);
 #endif
     for (auto edge : edges_) {
       fprintf(fout, "e %llu %llu\n", std::get<0>(edge) + 1, std::get<1>(edge) + 1);
     }
     fclose(fout);
+    if( rank==0)
+      std::cout << "Finished writing in file "<< config_.output_file << std::endl;
+  };
+
+  // 3D geometric point output
+  void Print(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>) const {
+    PEID rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (PEID i = 0; i < size; i++) {
+      if (i == rank) {
+        std::string mode = i == 0 ? "w+" : "a";
+        FILE* fout = fopen(config_.coord_file.c_str(), mode.c_str());
+        for (auto edge : edges_) {
+          fprintf(fout, "%f %f %f\n", std::get<0>(edge), std::get<1>(edge),
+                  std::get<2>(edge));
+        }
+        fclose(fout);
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+    }
+    if( rank==0)
+      std::cout << "Finished writing in file "<< config_.coord_file << std::endl;
+  };
+
+  // 2D geometric point output
+  void Print(identity<std::tuple<LPFloat, LPFloat, SInt>>) const {
+    PEID rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (PEID i = 0; i < size; i++) {
+      if (i == rank) {
+        std::string mode = i == 0 ? "w+" : "a";
+        FILE* fout = fopen(config_.coord_file.c_str(), mode.c_str());
+        for (auto edge : edges_) {
+          fprintf(fout, "%f %f\n", std::get<0>(edge), std::get<1>(edge));
+        }
+        fclose(fout);
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+    }
+    if( rank==0)
+      std::cout << "Finished writing in file "<< config_.coord_file << std::endl;
   };
 
   // ABUSE: adjacency list output
