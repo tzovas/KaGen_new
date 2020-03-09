@@ -101,7 +101,16 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
     edges.Push(gen.NumberOfEdges());
   }
 
-  if (rank == ROOT) std::cout << "write output..." << std::endl;
+  unsigned long int localNumEdges = gen.NumberOfEdges();
+  unsigned long int globalNumEdges  = 0;
+  MPI_Reduce( &localNumEdges, &globalNumEdges, 1, MPI_UNSIGNED_LONG, MPI_SUM, ROOT, MPI_COMM_WORLD);
+
+  if (rank == ROOT){
+    std::cout   << "done generating graph, time: " << total_time
+                << ", total number of edges: " << globalNumEdges
+                << ", write output..." << std::endl;
+  }
+  
   gen.Output();
 }
 
@@ -188,6 +197,7 @@ int main(int argn, char **argv) {
               << " time_per_edge=" << edge_stats.Avg() 
               << " output stored in file " << generator_config.output_file << std::endl;
   }
+  //std::cout << rank << ": edges=" << edges.Avg() << std::endl;
 
   MPI_Finalize();
   return 0;

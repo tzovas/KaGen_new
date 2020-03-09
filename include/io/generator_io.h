@@ -67,6 +67,7 @@ class GeneratorIO {
     local_num_edges_++;
   }
 
+/*
   inline void PushEdge(SInt v1, SInt v2){
 	if( v1 < v2){
 		edges_.emplace_back( std::make_tuple( v1, v2) );
@@ -76,6 +77,7 @@ class GeneratorIO {
 	//v1 > v2 ? edges_.emplace_back( std::make_tuple( v1, v2) ) : edges_.emplace_back( std::make_tuple( v2, v1) );
     local_num_edges_++;
   }
+  */
   
   void OutputEdges() const { 
 #ifdef SINGLE_LIST
@@ -96,6 +98,15 @@ class GeneratorIO {
   std::vector<Edge> edges_;
 
   SInt local_num_edges_;
+  
+
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>) const {
+    throw std::logic_error("Not implemented, should not be called.");
+  }
+
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>) const {
+    throw std::logic_error("Not implemented, should not be called.");
+  }
 
   void GatherPrint(identity<std::tuple<SInt, SInt>>) const {
     // Exchange local dist
@@ -139,9 +150,9 @@ class GeneratorIO {
       // Output edges
       FILE* fout = fopen(config_.output_file.c_str(), "w+");
 #ifndef OMIT_HEADER
-      fprintf(fout, "p %llu %lu\n", config_.n, edges.size());
+      fprintf(fout, "%% %llu %lu\n", config_.n, edges.size());
 #endif
-      for (auto edge : edges) fprintf(fout, "e %llu %llu\n", std::get<0>(edge) + 1, std::get<1>(edge) + 1);
+      for (auto edge : edges) fprintf(fout, "%llu %llu\n", std::get<0>(edge) , std::get<1>(edge) );
       fclose(fout);
     }
   }
@@ -159,10 +170,10 @@ class GeneratorIO {
     FILE* fout =
         fopen((config_.output_file + "_" + std::to_string(rank)).c_str(), "w+");
 #ifndef OMIT_HEADER
-    fprintf(fout, "p %llu %llu\n", config_.n, total_num_edges);
+    fprintf(fout, "%% %llu %llu\n", config_.n, total_num_edges);
 #endif
     for (auto edge : edges_) {
-      fprintf(fout, "e %llu %llu\n", std::get<0>(edge) + 1, std::get<1>(edge) + 1);
+      fprintf(fout, "%llu %llu\n", std::get<0>(edge) , std::get<1>(edge) );
     }
     fclose(fout);
     if( rank==0)
