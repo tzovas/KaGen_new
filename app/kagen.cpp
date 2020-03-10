@@ -33,53 +33,53 @@
 using namespace kagen;
 
 void OutputParameters(PGeneratorConfig &config, const PEID /* rank */,
-                      const PEID size) {
+                      const PEID size, std::ostream& out=std::cout ) {
   if (config.generator == "gnm_directed" ||
       config.generator == "gnm_undirected" ||
       config.generator == "gnp_directed" ||
       config.generator == "gnp_undirected")
-    std::cout << "generate graph (n=" << config.n << ", m=" << config.m
+    out << "generate graph (n=" << config.n << ", m=" << config.m
               << " (p=" << config.p << "), k=" << config.k
               << ", s=" << config.seed << ", P=" << size << ")" << std::endl;
 
   else if (config.generator == "rgg_2d" || config.generator == "rgg_3d")
-    std::cout << "generate graph (n=" << config.n << ", r=" << config.r
+    out << "generate graph (n=" << config.n << ", r=" << config.r
               << ", k=" << config.k << ", s=" << config.seed << ", P=" << size
               << ")" << std::endl;
 
   else if (config.generator == "rdg_2d" || config.generator == "rdg_3d")
-    std::cout << "generate graph (n=" << config.n << ", k=" << config.k
+    out << "generate graph (n=" << config.n << ", k=" << config.k
               << ", s=" << config.seed << ", P=" << size << ")" << std::endl;
 
   else if (config.generator == "rhg")
-    std::cout << "generate graph (n=" << config.n << ", d=" << config.avg_degree
+    out << "generate graph (n=" << config.n << ", d=" << config.avg_degree
               << ", gamma=" << config.plexp << ", k=" << config.k
               << ", s=" << config.seed << ", P=" << size << ")" << std::endl;
 
   else if (config.generator == "ba")
-    std::cout << "generate graph (n=" << config.n << ", d=" << config.min_degree
+    out << "generate graph (n=" << config.n << ", d=" << config.min_degree
               << ", k=" << config.k << ", s=" << config.seed << ", P=" << size
               << ")" << std::endl;
 
   else if (config.generator == "rmat")
-    std::cout << "generate graph (n=" << config.n << ", m=" << config.m
+    out << "generate graph (n=" << config.n << ", m=" << config.m
               << ", k=" << config.k << ", s=" << config.seed << ", P=" << size
               << ")" << std::endl;
 
   else if (config.generator == "grid_2d")
-    std::cout << "generate graph (row=" << config.grid_x << ", col=" << config.grid_y
+    out << "generate graph (row=" << config.grid_x << ", col=" << config.grid_y
               << ", p=" << config.p << ", k=" << config.k << ", s=" << config.seed 
               << ", P=" << size << ")" << std::endl;
 
   else if (config.generator == "grid_3d")
-    std::cout << "generate graph (x=" << config.grid_x << ", y=" << config.grid_y << ", z=" << config.grid_z
+    out << "generate graph (x=" << config.grid_x << ", y=" << config.grid_y << ", z=" << config.grid_z
               << ", p=" << config.p << ", k=" << config.k << ", s=" << config.seed 
               << ", P=" << size << ")" << std::endl;
 }
 
 template <typename Generator, typename EdgeCallback>
 void RunGenerator(PGeneratorConfig &config, const PEID rank,
-                  const PEID /* size */, Statistics &stats, Statistics &edge_stats,
+                  const PEID size , Statistics &stats, Statistics &edge_stats,
                   Statistics &edges, const EdgeCallback &cb) {
   // Start timers
   Timer t;
@@ -112,6 +112,12 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
   }
   
   gen.Output();
+
+  if (rank == ROOT){
+    std::string headerFile = config.output_file+".info";
+    auto fheader = std::fstream(headerFile, std::fstream::app);
+    OutputParameters(config, rank, size, fheader);
+  }
 }
 
 int main(int argn, char **argv) {

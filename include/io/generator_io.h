@@ -244,6 +244,7 @@ class GeneratorIO {
 
   }//GatherPrint, 2D
 
+  //TODO: consider making it non-const. It would save some time
   //for the edges
   void GatherPrint(identity<std::tuple<SInt, SInt>>, bool binary=false) const {
     // Exchange local dist
@@ -272,16 +273,18 @@ class GeneratorIO {
     MPI_Datatype MPI_EDGE;
     MPI_Type_vector(1, 2, 0, MPI_LONG, &MPI_EDGE);
     MPI_Type_commit(&MPI_EDGE);
-    std::vector<Edge> edges(total_num_edges);
+    std::vector<Edge> edges(total_num_edges); //this is needed because method is const
     MPI_Gatherv(edges_.data(), lSize, MPI_EDGE,
                 edges.data(), num_edges.data(), displ.data(), MPI_EDGE, 
                 ROOT, MPI_COMM_WORLD);
 
     if (rank == ROOT) {
       // Sort edges and remove duplicates
+      std::cout<< __FILE__ << ", " << __LINE__ << ": num edges before removing duplicates: " << edges.size() << std::endl;        
       std::sort(std::begin(edges), std::end(edges));
       edges.erase(unique(edges.begin(), edges.end()), edges.end());
-      
+      std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << edges.size() << std::endl;
+
       // Output edges
       if ( not binary){
         FILE* fout = fopen(config_.output_file.c_str(), "w+");
@@ -292,11 +295,16 @@ class GeneratorIO {
         fclose(fout);
       }else{
         //for binary files we enforce the header
-        auto fout = std::fstream(config_.output_file, std::ios::out | std::ios::binary);
         const SInt edgesSize = edges.size();
         std::cout<< __FILE__ << ", " << __LINE__ << ": n= " << config_.n << ", m= " << edgesSize << std::endl;
-
-        //fprintf(fout, "%llu %lu\n", config_.n, edges.size());
+        {
+          //write header also in a separate text file
+          std::string headerFile = config_.output_file+".info";
+          auto fheader = std::fstream(headerFile, std::fstream::app);
+          fheader <<  "n= " << config_.n << ", m= " << edgesSize << ", r= "<< config_.r<< std::endl;
+        }
+        auto fout = std::fstream(config_.output_file, std::ios::out | std::ios::binary);
+        
         fout.write( reinterpret_cast<const char*>(&config_.n), sizeof config_.n );
         fout.write( reinterpret_cast<const char*>(&edgesSize), sizeof edgesSize );
         for (auto edge : edges){
