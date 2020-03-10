@@ -198,12 +198,12 @@ void ParseParameters(int argn, char **argv,
   generator_config.avg_degree = args.Get<double>("d", 5.0);
   generator_config.plexp = args.Get<double>("gamma", 2.6);
 
-  if(  args.IsSet("d") )
-    double newR;
+  if(  args.IsSet("d") ){
+    double newR = generator_config.r;
     if(generator_config.generator == "rgg_2d"){
        newR = std::sqrt( (double) 2*generator_config.avg_degree /(3.1415*generator_config.n) );
-    }else{ //3d
-        newR = = std::pow( (double) 3*generator_config.avg_degree /(2*3.1415*generator_config.n), 3);
+    }else if (generator_config.generator == "rgg_3d"){
+        newR = std::pow( (double) 3*generator_config.avg_degree /(2*3.1415*generator_config.n), 3);
     }
 
     generator_config.r = newR;
