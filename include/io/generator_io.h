@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "generator_config.h"
+#include "timer.h"
 
 namespace kagen {
 
@@ -147,7 +148,6 @@ class GeneratorIO {
       }
     }
 
-    std::cout<< __FILE__ << ", " << __LINE__ << ": " << rank << ", local size= " << lSize <<  ", total_num_edges= " << total_num_edges << std::endl;
     globalCoords.resize(total_num_edges);
     globalIds.resize(total_num_edges);
 
@@ -180,9 +180,23 @@ class GeneratorIO {
     std::vector<std::tuple<LPFloat, LPFloat>> globalCoords; 
     std::vector<SInt> globalIds; 
 
+    Timer t;
+    double local_time = 0.0;
+    double total_time = 0.0;
+    t.Restart();
+
     GatherCoords( identity<Edge>(), globalCoords, globalIds);
 
+    local_time = t.Elapsed();
+    MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
+             MPI_COMM_WORLD);
+
     if (rank == ROOT) {
+
+      std::cout << "time to gather the coordinates: " << total_time << std::endl;
+
+      local_time = 0.0;
+      t.Restart();
       //checks
       if( not std::is_sorted(globalIds.begin(), globalIds.end()) ){
         //throw std::logic_error("ERROR: For some reason, the coordinate indices are not sorted.");
@@ -213,11 +227,16 @@ class GeneratorIO {
         }
       }
 
+      //sanity check
       for( unsigned int i=0; i<globalIds.size()-1; i++){
         if( globalIds[i]==globalIds[i+1]){
           throw std::logic_error("ERROR: vertex id " + std::to_string(globalIds[i]) + " is duplicated.");
         }
       }
+      local_time = t.Elapsed();
+      std::cout << "time to sort and check: " << local_time << std::endl;
+      //local_time = 0.0;
+      //t.Restart();
 
       if (not binary){
         // Output edges     

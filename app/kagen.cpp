@@ -95,6 +95,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
   local_time = t.Elapsed();
   MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
              MPI_COMM_WORLD);
+
   if (rank == ROOT) {
     stats.Push(total_time);
     edge_stats.Push(total_time / gen.NumberOfEdges());
@@ -111,13 +112,25 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
                 << ", write output..." << std::endl;
   }
   
-  gen.Output();
+  local_time = 0.0;
+  total_time = 0.0;
+  t.Restart();
 
+  gen.Output();
+  local_time = t.Elapsed();
+  MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
+             MPI_COMM_WORLD);
+
+#ifdef OUTPUT_EDGES
   if (rank == ROOT){
+    //file to store some data about the output files
     std::string headerFile = config.output_file+".info";
     auto fheader = std::fstream(headerFile, std::fstream::app);
     OutputParameters(config, rank, size, fheader);
+    fheader << "time to write output: "<< total_time << std::endl;
+    std::cout << "time to write output: "<< total_time << std::endl;
   }
+#endif
 }
 
 int main(int argn, char **argv) {
