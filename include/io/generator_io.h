@@ -266,7 +266,6 @@ class GeneratorIO {
     if (rank == ROOT) {
       // Sort edges and remove duplicates
       std::sort(std::begin(edges), std::end(edges));
-      //SInt total_edges = edges.size();
       edges.erase(unique(edges.begin(), edges.end()), edges.end());
       
       // Output edges
@@ -278,11 +277,10 @@ class GeneratorIO {
         for (auto edge : edges) fprintf(fout, "%llu %llu\n", std::get<0>(edge) , std::get<1>(edge) );
         fclose(fout);
       }else{
-        //for binary files we enforce the header because we need to know the number of edges
-
+        //for binary files we enforce the header
         auto fout = std::fstream(config_.output_file, std::ios::out | std::ios::binary);
         const SInt edgesSize = edges.size();
-        std::cout<< __FILE__ << ", " << __LINE__ << ": " << config_.n << ", " << edgesSize << std::endl;
+        std::cout<< __FILE__ << ", " << __LINE__ << ": n= " << config_.n << ", m= " << edgesSize << std::endl;
 
         //fprintf(fout, "%llu %lu\n", config_.n, edges.size());
         fout.write( reinterpret_cast<const char*>(&config_.n), sizeof config_.n );
@@ -295,7 +293,7 @@ class GeneratorIO {
       }
     }// if (rank == ROOT) 
 
-  }
+  }// GatherPrint
 
   //
   // distributed versions
