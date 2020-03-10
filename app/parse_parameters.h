@@ -165,6 +165,7 @@ void ParseParameters(int argn, char **argv,
   generator_config.output_file = args.Get<std::string>("output", "out");
   generator_config.coord_file = args.Get<std::string>("coord_output", "coords");
   generator_config.output_dir = args.Get<std::string>("output_dir", "./");
+  generator_config.output_format = args.Get<std::string>("output_format", "text");
 
   // if no output parameter is given, create file name automatically
   bool isOutfileGiven = args.IsSet("output");

@@ -119,7 +119,8 @@ public:
     outputRadiusStats();
 #endif
 #ifdef OUTPUT_EDGES
-    edge_io_.OutputEdges();
+    bool binaryFormat = config_.output_format=="binary" ? true : false;
+    edge_io_.OutputEdges(binaryFormat);
     point_io_.OutputEdges();
 #else
     edge_io_.OutputDist();

@@ -36,6 +36,8 @@ struct PGeneratorConfig {
   std::string coord_file;
   //Directory to store files
   std::string output_dir;
+  // The format can be text, the default, or binary
+  std::string output_format ;
   // Debug output
   std::string debug_output;
   // Use hash tryagain sampling

@@ -78,9 +78,9 @@ class GeneratorIO {
     local_num_edges_++;
   }
 
-  void OutputEdges() const { 
+  void OutputEdges( bool binary=false) const { 
 #ifdef SINGLE_LIST
-    GatherPrint(identity<Edge>());
+    GatherPrint(identity<Edge>(), binary);
 #else
     Print(identity<Edge>()); 
 #endif
@@ -99,7 +99,8 @@ class GeneratorIO {
   SInt local_num_edges_;
   
 
-  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>) const {
+
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
     throw std::logic_error("Not implemented, should not be called.");
   }
 
@@ -171,7 +172,7 @@ class GeneratorIO {
 
 
   //2D point output
-  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>) const {
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
     PEID rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -218,7 +219,7 @@ class GeneratorIO {
         }
       }
 
-      // Output edges
+      // Output edges     
       FILE* fout = fopen(config_.coord_file.c_str(), "w+");
 
       for (auto coord : globalCoords){
@@ -230,7 +231,7 @@ class GeneratorIO {
   }//GatherPrint, 2D
 
   //for the edges
-  void GatherPrint(identity<std::tuple<SInt, SInt>>) const {
+  void GatherPrint(identity<std::tuple<SInt, SInt>>, bool binary=false) const {
     // Exchange local dist
     PEID rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -269,13 +270,31 @@ class GeneratorIO {
       edges.erase(unique(edges.begin(), edges.end()), edges.end());
       
       // Output edges
-      FILE* fout = fopen(config_.output_file.c_str(), "w+");
+      if ( not binary){
+        FILE* fout = fopen(config_.output_file.c_str(), "w+");
 #ifndef OMIT_HEADER
-      fprintf(fout, "%llu %lu\n", config_.n, edges.size());
+        fprintf(fout, "%llu %lu\n", config_.n, edges.size());
 #endif
-      for (auto edge : edges) fprintf(fout, "%llu %llu\n", std::get<0>(edge) , std::get<1>(edge) );
-      fclose(fout);
-    }
+        for (auto edge : edges) fprintf(fout, "%llu %llu\n", std::get<0>(edge) , std::get<1>(edge) );
+        fclose(fout);
+      }else{
+        //for binary files we enforce the header because we need to know the number of edges
+
+        auto fout = std::fstream(config_.output_file, std::ios::out | std::ios::binary);
+        const SInt edgesSize = edges.size();
+        std::cout<< __FILE__ << ", " << __LINE__ << ": " << config_.n << ", " << edgesSize << std::endl;
+
+        //fprintf(fout, "%llu %lu\n", config_.n, edges.size());
+        fout.write( reinterpret_cast<const char*>(&config_.n), sizeof config_.n );
+        fout.write( reinterpret_cast<const char*>(&edgesSize), sizeof edgesSize );
+        for (auto edge : edges){
+          fout.write( reinterpret_cast<const char*>(&std::get<0>(edge)), sizeof std::get<0>(edge) );
+          fout.write( reinterpret_cast<const char*>(&std::get<1>(edge)), sizeof std::get<1>(edge) );
+        }
+        fout.close();
+      }
+    }// if (rank == ROOT) 
+
   }
 
   //
