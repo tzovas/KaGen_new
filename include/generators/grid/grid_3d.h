@@ -301,10 +301,12 @@ class Grid3D {
     SInt intersect_frontal_frontal_left = vertex_x * next_vertex_y * vertex_z;
     SInt intersect_all = vertex_x * vertex_y * vertex_z;
 
+    /*
     SInt offset = upper_cube + frontal_cube + frontal_left_cube 
                     - (intersect_upper_frontal + intersect_upper_frontal_left + intersect_frontal_frontal_left)
                     + intersect_all;
-
+    */
+    
     return upper_cube + frontal_cube + frontal_left_cube 
             - (intersect_upper_frontal + intersect_upper_frontal_left + intersect_frontal_frontal_left)
             + intersect_all;
