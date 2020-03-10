@@ -10,6 +10,7 @@
 #define _PARSE_PARAMETERS_H_
 
 #include <string.h>
+#include <cmath>
 
 #include "generator_config.h"
 #include "tools/arg_parser.h"
@@ -20,7 +21,8 @@ namespace kagen {
 
 void ParseParameters(int argn, char **argv,
                      PEID rank , PEID size,
-                     PGeneratorConfig &generator_config) {
+                     PGeneratorConfig &generator_config,
+                     std::ostream& out=std::cout ) {
   ArgParser args(argn, argv);
 
   // Generator
@@ -28,118 +30,118 @@ void ParseParameters(int argn, char **argv,
 
   if ( (args.IsSet("help") || argn < 2) && rank==ROOT ){
     if (generator_config.generator == "") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "==================== KaGen =====================" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Usage:\t\t\tmpirun -n <num_proc> ./kagen -gen <generator> [additional parameters]" << std::endl;
-      std::cout << "Generators:\t\tgnm_directed|gnm_undirected|gnp_directed|gnp_undirected|rgg_2d|rgg_3d|rdg_2d|rdg_3d|ba|rhg" << std::endl;
-      std::cout << "Additional help:\t./kagen -gen <generator> -help" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%==================== KaGen =====================" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Usage:\t\t\tmpirun -n <num_proc> ./kagen -gen <generator> [additional parameters]" << std::endl;
+      out << "%%Generators:\t\tgnm_directed|gnm_undirected|gnp_directed|gnp_undirected|rgg_2d|rgg_3d|rdg_2d|rdg_3d|ba|rhg" << std::endl;
+      out << "%%Additional help:\t./kagen -gen <generator> -help" << std::endl;
     }
     
     if (generator_config.generator == "gnm_undirected" || generator_config.generator == "gnm_directed") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "========== Erdos-Renyi Graphs G(n,m) ===========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-m\t\t<number of edges as a power of two>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "-self_loops" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen gnm_directed -n 20 -m 22 -self_loops -output tmp" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%========== Erdos-Renyi Graphs G(n,m) ===========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-m\t\t<number of edges as a power of two>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%-self_loops" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen gnm_directed -n 20 -m 22 -self_loops -output tmp" << std::endl;
     } else if (generator_config.generator == "gnp_undirected" || generator_config.generator == "gnp_directed") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "========== Erdos-Renyi Graphs G(n,p) ===========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-p\t\t<edge probability>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "-self_loops" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen gnp_directed -n 20 -p 0.001 -self_loops -output tmp" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%========== Erdos-Renyi Graphs G(n,p) ===========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-p\t\t<edge probability>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%-self_loops" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen gnp_directed -n 20 -p 0.001 -self_loops -output tmp" << std::endl;
     } else if (generator_config.generator == "rgg_2d" || generator_config.generator == "rgg_3d") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "======= Random Geometric Graphs RGG(n,d) ========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-r\t\t<radius for vertices to be connected> (r <= 1.0)>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen rgg_3d -n 20 -r 0.00275 -output tmp" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%======= Random Geometric Graphs RGG(n,d) ========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-r\t\t<radius for vertices to be connected> (r <= 1.0)>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen rgg_3d -n 20 -r 0.00275 -output tmp" << std::endl;
     } else if (generator_config.generator == "rdg_2d" || generator_config.generator == "rdg_3d") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "======== Random Delaunay Graphs RDG(n) =========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen rdg_3d -n 20 -output tmp" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%======== Random Delaunay Graphs RDG(n) =========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen rdg_3d -n 20 -output tmp" << std::endl;
     } else if (generator_config.generator == "ba") {
-      std::cout << "================================================" << std::endl;
-      std::cout << "======= Barabassi-Albert Graphs BA(n,d) ========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-md\t\t<min degree for each vertex>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen ba -n 20 -md 4 -output tmp" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%======= Barabassi-Albert Graphs BA(n,d) ========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-md\t\t<min degree for each vertex>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen ba -n 20 -md 4 -output tmp" << std::endl;
     } else if (generator_config.generator == "rhg") {
-      std::cout << "Parameters for Random Hyperbolic Graphs RHG(n,gamma,d)" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "=== Random Hyperbolic Graphs RHG(n,gamma,d) ====" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-gamma\t\t<power-law exponent>" << std::endl;
-      std::cout << "-d\t\t<average degree>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen rhg -n 20 -d 8 -gamma 2.2 -output tmp" << std::endl;
+      out << "%%Parameters for Random Hyperbolic Graphs RHG(n,gamma,d)" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%=== Random Hyperbolic Graphs RHG(n,gamma,d) ====" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-gamma\t\t<power-law exponent>" << std::endl;
+      out << "%%-d\t\t<average degree>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen rhg -n 20 -d 8 -gamma 2.2 -output tmp" << std::endl;
     } else if (generator_config.generator == "rmat") {
-      std::cout << "Parameters for Kronecker Graphs RMAT(n,m)" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "=========== Kronecker Graphs RMAT(n,m) =========" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-n\t\t<number of vertices as a power of two>" << std::endl;
-      std::cout << "-m\t\t<number of edges as a power of two>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen rmat -n 20 -m 22 -output tmp" << std::endl;
+      out << "%%Parameters for Kronecker Graphs RMAT(n,m)" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%=========== Kronecker Graphs RMAT(n,m) =========" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-n\t\t<number of vertices as a power of two>" << std::endl;
+      out << "%%-m\t\t<number of edges as a power of two>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen rmat -n 20 -m 22 -output tmp" << std::endl;
     } else if (generator_config.generator == "grid") {
-      std::cout << "Parameters for 2D/3D Grid Graphs G(x,y(,z),periodic)" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "=========== Grid Graphs G(x,y(,z)) ================" << std::endl;
-      std::cout << "================================================" << std::endl;
-      std::cout << "Parameters:" << std::endl;
-      std::cout << "-x\t\t<size of first dimension>" << std::endl;
-      std::cout << "-y\t\t<size of second dimension>" << std::endl;
-      std::cout << "-z\t\t<size of third dimension>" << std::endl;
-      std::cout << "-p\t\t<probability of edge insertion>" << std::endl;
-      std::cout << "-periodic\t\t<use periodic boundary condition>" << std::endl;
-      std::cout << "-k\t\t<number of chunks>" << std::endl;
-      std::cout << "-seed\t\t<seed for PRNGs>" << std::endl;
-      std::cout << "-output\t\t<output file>" << std::endl;
-      std::cout << "\nExample:" << std::endl;
-      std::cout << "mpirun -n 16 ./build/app/kagen -gen grid -x 16 -y 16 -output tmp" << std::endl;
+      out << "%%Parameters for 2D/3D Grid Graphs G(x,y(,z),periodic)" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%=========== Grid Graphs G(x,y(,z)) ================" << std::endl;
+      out << "%%================================================" << std::endl;
+      out << "%%Parameters:" << std::endl;
+      out << "%%-x\t\t<size of first dimension>" << std::endl;
+      out << "%%-y\t\t<size of second dimension>" << std::endl;
+      out << "%%-z\t\t<size of third dimension>" << std::endl;
+      out << "%%-p\t\t<probability of edge insertion>" << std::endl;
+      out << "%%-periodic\t\t<use periodic boundary condition>" << std::endl;
+      out << "%%-k\t\t<number of chunks>" << std::endl;
+      out << "%%-seed\t\t<seed for PRNGs>" << std::endl;
+      out << "%%-output\t\t<output file>" << std::endl;
+      out << "%%\nExample:" << std::endl;
+      out << "%%mpirun -n 16 ./build/app/kagen -gen grid -x 16 -y 16 -output tmp" << std::endl;
     }
     exit(0);
   }
@@ -196,6 +198,19 @@ void ParseParameters(int argn, char **argv,
   generator_config.avg_degree = args.Get<double>("d", 5.0);
   generator_config.plexp = args.Get<double>("gamma", 2.6);
 
+  if(  args.IsSet("d") )
+    double newR;
+    if(generator_config.generator == "rgg_2d"){
+       newR = std::sqrt( (double) 2*generator_config.avg_degree /(3.1415*generator_config.n) );
+    }else{ //3d
+        newR = = std::pow( (double) 3*generator_config.avg_degree /(2*3.1415*generator_config.n), 3);
+    }
+
+    generator_config.r = newR;
+    if(rank==ROOT)
+      out << "%% Setting/overwriting r to " << generator_config.r << std::endl;
+  }
+
   // RHG 
   generator_config.thres = args.Get<ULONG>("t", 0);
   generator_config.query_both = args.Get<bool>("qb", false);
@@ -218,7 +233,7 @@ void ParseParameters(int argn, char **argv,
 
   // Benchmarks
   generator_config.iterations = args.Get<ULONG>("i", 1);
-}
+}//void ParseParameters
 
 }
 #endif

@@ -107,7 +107,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
 
   if (rank == ROOT){
     std::cout   << "done generating graph, time: " << total_time
-                << ", total number of edges: " << globalNumEdges
+                << ", total number of edges: " << globalNumEdges/2
                 << ", write output..." << std::endl;
   }
   
@@ -123,7 +123,7 @@ int main(int argn, char **argv) {
 
   // Read command-line args
   PGeneratorConfig generator_config;
-  ParseParameters(argn, argv, rank, size, generator_config);
+  ParseParameters( argn, argv, rank, size, generator_config, std::cout);
 
   std::string callingCommand = "";
   for (int i = 0; i < argn; i++) {
@@ -132,8 +132,8 @@ int main(int argn, char **argv) {
 
   if (rank == ROOT){
     OutputParameters(generator_config, rank, size);
-    std::cout<<"Calling command: " << callingCommand <<std::endl;
-    std::cout<<"Called with " << size << " MPI processes" << std::endl;
+    std::cout<<"%%Calling command: " << callingCommand <<std::endl;
+    std::cout<<"%%Called with " << size << " MPI processes" << std::endl;
   }
 
   // Statistics
@@ -194,7 +194,8 @@ int main(int argn, char **argv) {
               << " time=" << stats.Avg() << " stddev=" << stats.Stddev()
               << " iterations=" << generator_config.iterations
               << " edges=" << edges.Avg()
-              << " time_per_edge=" << edge_stats.Avg() 
+              << " time_per_edge=" << edge_stats.Avg()
+              << " r= " << generator_config.r
               << " output stored in file " << generator_config.output_file << std::endl;
   }
   //std::cout << rank << ": edges=" << edges.Avg() << std::endl;
