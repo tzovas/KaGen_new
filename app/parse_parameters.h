@@ -206,9 +206,10 @@ void ParseParameters(int argn, char **argv,
         newR = std::pow( (double) 3*generator_config.avg_degree /(2*3.1415*generator_config.n), 3);
     }
 
-    generator_config.r = newR;
-    if(rank==ROOT)
+    if(rank==ROOT and generator_config.r!=newR){
       out << "%% Setting/overwriting r to " << generator_config.r << std::endl;
+    }
+    generator_config.r = newR;
   }
 
   // RHG 
