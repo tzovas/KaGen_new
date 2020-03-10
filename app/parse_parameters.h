@@ -170,7 +170,12 @@ void ParseParameters(int argn, char **argv,
   // if no output parameter is given, create file name automatically
   bool isOutfileGiven = args.IsSet("output");
   if( not isOutfileGiven){
-    generator_config.output_file = generator_config.generator + "_" + std::to_string(args.Get<ULONG>("n", 3))+".edgl";
+    std::string fileExt=".edgl";
+
+    if( generator_config.output_format == "binary"){
+        fileExt = ".bgf";
+    }
+    generator_config.output_file = generator_config.generator + "_" + std::to_string(args.Get<ULONG>("n", 3))+fileExt;
     generator_config.coord_file = generator_config.output_file+".xyz";
   }
   

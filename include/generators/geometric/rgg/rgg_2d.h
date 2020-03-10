@@ -39,7 +39,7 @@ class RGG2D : public Geometric2D {
 #ifdef OUTPUT_EDGES
     bool binaryFormat = config_.output_format=="binary" ? true : false;
     io_.OutputEdges(binaryFormat);
-    point_io_.OutputEdges();
+    point_io_.OutputEdges(binaryFormat);
 #else
     io_.OutputDist(); 
 #endif

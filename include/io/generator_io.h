@@ -183,35 +183,35 @@ class GeneratorIO {
     GatherCoords( identity<Edge>(), globalCoords, globalIds);
 
     if (rank == ROOT) {
-        //checks
-        if( not std::is_sorted(globalIds.begin(), globalIds.end()) ){
-            //throw std::logic_error("ERROR: For some reason, the coordinate indices are not sorted.");
-            std::cout<< "WARNING: indices are not sorted, will sort now" << std::endl;
+      //checks
+      if( not std::is_sorted(globalIds.begin(), globalIds.end()) ){
+        //throw std::logic_error("ERROR: For some reason, the coordinate indices are not sorted.");
+        std::cout<< "WARNING: indices are not sorted, will sort now" << std::endl;
 
-            //zip again to sort and remove duplicates
-            std::vector<std::tuple<LPFloat, LPFloat, SInt>> forSort;
-            for( unsigned long i=0; i<globalCoords.size(); i++){
-                forSort.push_back( std::tuple<LPFloat, LPFloat, SInt>( std::get<0>(globalCoords[i]), std::get<1>(globalCoords[i]), globalIds[i] ) );
-            }
-
-            std::stable_sort( forSort.begin(), forSort.end(), []( auto x1, auto x2){
-                return std::get<2>(x1) < std::get<2>(x2);
-                });
-            
-            std::cout<< __FILE__ << ", " << __LINE__ << ": before removing duplicates: " << forSort.size() << std::endl;
-            forSort.erase( unique(forSort.begin(), forSort.end()), forSort.end() );
-            std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << forSort.size() << std::endl;
-
-            //unzip
-            SInt newSize = forSort.size();
-            globalIds.resize( newSize, 0);
-            globalCoords.resize( newSize,std::tuple<LPFloat, LPFloat>(0.0, 0.0) );
-            for ( unsigned int i=0; i<newSize; i++ ){
-              auto edge = forSort[i];
-              globalCoords[i] = std::tuple<LPFloat, LPFloat>( std::get<0>(edge) , std::get<1>(edge) );
-              globalIds[i] = std::get<2>(edge);
-            }
+        //zip again to sort and remove duplicates
+        std::vector<std::tuple<LPFloat, LPFloat, SInt>> forSort;
+        for( unsigned long i=0; i<globalCoords.size(); i++){
+          forSort.push_back( std::tuple<LPFloat, LPFloat, SInt>( std::get<0>(globalCoords[i]), std::get<1>(globalCoords[i]), globalIds[i] ) );
         }
+
+        std::stable_sort( forSort.begin(), forSort.end(), []( auto x1, auto x2){
+          return std::get<2>(x1) < std::get<2>(x2);
+        });
+    
+        std::cout<< __FILE__ << ", " << __LINE__ << ": before removing duplicates: " << forSort.size() << std::endl;
+        forSort.erase( unique(forSort.begin(), forSort.end()), forSort.end() );
+        std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << forSort.size() << std::endl;
+
+        //unzip
+        SInt newSize = forSort.size();
+        globalIds.resize( newSize, 0);
+        globalCoords.resize( newSize,std::tuple<LPFloat, LPFloat>(0.0, 0.0) );
+        for ( unsigned int i=0; i<newSize; i++ ){
+          auto edge = forSort[i];
+          globalCoords[i] = std::tuple<LPFloat, LPFloat>( std::get<0>(edge) , std::get<1>(edge) );
+          globalIds[i] = std::get<2>(edge);
+        }
+      }
 
       for( unsigned int i=0; i<globalIds.size()-1; i++){
         if( globalIds[i]==globalIds[i+1]){
@@ -219,15 +219,29 @@ class GeneratorIO {
         }
       }
 
-      // Output edges     
-      FILE* fout = fopen(config_.coord_file.c_str(), "w+");
+      if (not binary){
+        // Output edges     
+        FILE* fout = fopen(config_.coord_file.c_str(), "w+");
+        for (auto coord : globalCoords){
+          fprintf(fout, "%f %f\n", std::get<0>(coord) , std::get<1>(coord) );
+        }
+        fclose(fout);
+      }else{
+        //for binary files we enforce the header
+        auto fout = std::fstream(config_.coord_file, std::ios::out | std::ios::binary);
 
-      for (auto coord : globalCoords){
-        fprintf(fout, "%f %f\n", std::get<0>(coord) , std::get<1>(coord) );
+        const auto sizeOfCoord = sizeof std::get<0>(globalCoords[0]);
+        const LPFloat zero = 0.0;
+        for (auto coord : globalCoords){
+          fout.write( reinterpret_cast<const char*>(&std::get<0>(coord)), sizeOfCoord );
+          fout.write( reinterpret_cast<const char*>(&std::get<1>(coord)), sizeOfCoord );
+          //TODO: geographer expects 3 dimensional coordinates for the binary reader
+          fout.write( reinterpret_cast<const char*>(&zero), sizeOfCoord );
+        }
+        fout.close();
       }
-      fclose(fout);
-    }
-      
+    }//if (rank == ROOT) 
+
   }//GatherPrint, 2D
 
   //for the edges
