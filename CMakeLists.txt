@@ -29,6 +29,8 @@ option(KAGEN_USE_LTO "Compile with -flto (link-time optimization)." OFF)
 option(KAGEN_OUTPUT_EDGES "Output edge list." ON)
 option(KAGEN_SINGLE_OUTPUT "Output single edge list." OFF)
 option(KAGEN_OMIT_HEADER "Omit header in edge list" OFF)
+option(KAGEN_DIMENSION_2D "Geometric generator compiled for one dimension. 
+  If ON only 2d is compiled, if OFF only 3d" ON)
 
 ################################################################################
 
@@ -225,6 +227,11 @@ if(KAGEN_OUTPUT_EDGES)
   set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DOUTPUT_EDGES")
   if (KAGEN_SINGLE_OUTPUT)
     set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DSINGLE_LIST")
+  endif()
+  if (KAGEN_DIMENSION_2D)
+    set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DDIM_2D")
+  else()
+    set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DDIM_3D")
   endif()
   if (KAGEN_OMIT_HEADER)
     set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DOMIT_HEADER")

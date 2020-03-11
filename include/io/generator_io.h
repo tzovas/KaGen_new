@@ -87,14 +87,6 @@ class GeneratorIO {
 #endif
   }
 
-  void OutputCoods( const bool binary=false) const { 
-    if( std::is_same<Edge, std::tuple<LPFloat,LPFloat,SInt>>::value){
-        GatherPrint2D(identity<Edge>(), binary);
-    }else if( std::is_same<Edge, std::tuple<LPFloat,LPFloat,LPFloat,SInt>>::value){
-        GatherPrint3D(identity<Edge>(), binary);
-    }
-  }
-
   SInt NumEdges() const { 
     return edges_.size() > 0 ? edges_.size() : local_num_edges_/2; 
   }
@@ -106,23 +98,17 @@ class GeneratorIO {
   std::vector<Edge> edges_;
 
   SInt local_num_edges_;
-  
 
+//---------------------------
+// 2D
+//
+#ifdef DIM_2D
 
   void GatherPrint(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
-    throw std::logic_error("Not implemented, should not be called.");
+    throw std::logic_error("Not implemented, should not be called. For the 3D generators recompile with KAGEN_DIMENSION_2D=OFF");
   }
 
-  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
-    throw std::logic_error("Not implemented, should not be called.");
-  }
-
-  //typedef std::tuple<LPFloat, LPFloat> coord_2d;
-  //typedef std::tuple<LPFloat, LPFloat, LPFloat> coord_3d;
-
-
-  //template<typename coord_dd>
-  int GatherCoords2D( identity<std::tuple<LPFloat, LPFloat, SInt>>, std::vector<std::tuple<LPFloat, LPFloat>> &globalCoords, std::vector<SInt> &globalIds) const {
+  int GatherCoords( identity<std::tuple<LPFloat, LPFloat, SInt>>, std::vector<std::tuple<LPFloat, LPFloat>> &globalCoords, std::vector<SInt> &globalIds) const {
     // Exchange local dist
     PEID rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -182,7 +168,111 @@ class GeneratorIO {
     return total_num_edges;
   }
 
-  int GatherCoords3D( identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, std::vector<std::tuple<LPFloat, LPFloat, LPFloat>> &globalCoords, std::vector<SInt> &globalIds) const {
+  //2D point output
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
+    PEID rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    std::vector<std::tuple<LPFloat, LPFloat>> globalCoords; 
+    std::vector<SInt> globalIds; 
+
+    Timer t;
+    double local_time = 0.0;
+    double total_time = 0.0;
+    t.Restart();
+
+    GatherCoords( identity<Edge>(), globalCoords, globalIds);
+
+    local_time = t.Elapsed();
+    MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
+             MPI_COMM_WORLD);
+
+    if (rank == ROOT) {
+
+      std::cout << "time to gather the coordinates: " << total_time << std::endl;
+
+      local_time = 0.0;
+      t.Restart();
+      //checks
+      if( not std::is_sorted(globalIds.begin(), globalIds.end()) ){
+        //throw std::logic_error("ERROR: For some reason, the coordinate indices are not sorted.");
+        std::cout<< "WARNING: indices are not sorted, will sort now" << std::endl;
+
+        //zip again to sort and remove duplicates
+        std::vector<std::tuple<LPFloat, LPFloat, SInt>> forSort;
+        for( unsigned long i=0; i<globalCoords.size(); i++){
+          forSort.push_back( std::tuple<LPFloat, LPFloat, SInt>( std::get<0>(globalCoords[i]), std::get<1>(globalCoords[i]), globalIds[i] ) );
+        }
+
+        std::stable_sort( forSort.begin(), forSort.end(), []( auto x1, auto x2){
+          return std::get<2>(x1) < std::get<2>(x2);
+        });
+    
+        std::cout<< __FILE__ << ", " << __LINE__ << ": before removing duplicates: " << forSort.size() << std::endl;
+        forSort.erase( unique(forSort.begin(), forSort.end()), forSort.end() );
+        std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << forSort.size() << std::endl;
+
+        //unzip
+        SInt newSize = forSort.size();
+        globalIds.resize( newSize, 0);
+        globalCoords.resize( newSize,std::tuple<LPFloat, LPFloat>(0.0, 0.0) );
+        for ( unsigned int i=0; i<newSize; i++ ){
+          auto edge = forSort[i];
+          globalCoords[i] = std::tuple<LPFloat, LPFloat>( std::get<0>(edge) , std::get<1>(edge) );
+          globalIds[i] = std::get<2>(edge);
+        }
+      }
+
+      //sanity check
+      for( unsigned int i=0; i<globalIds.size()-1; i++){
+        if( globalIds[i]==globalIds[i+1]){
+          throw std::logic_error("ERROR: vertex id " + std::to_string(globalIds[i]) + " is duplicated.");
+        }
+        //do not allow isolated vertices
+        //if( not (globalIds[i+1]==globalIds[i]+1) ){
+        //  throw std::logic_error("ERROR: vertex id " + std::to_string(globalIds[i]+1) + " is missing.");
+        //}
+      }
+      local_time = t.Elapsed();
+      std::cout << "time to sort and check: " << local_time << std::endl;
+
+      if (not binary){
+        // Output edges     
+        FILE* fout = fopen(config_.coord_file.c_str(), "w+");
+        for (auto coord : globalCoords){
+          fprintf(fout, "%f %f\n", std::get<0>(coord) , std::get<1>(coord) );
+        }
+        fclose(fout);
+      }else{
+        //for binary files we enforce the header
+        auto fout = std::fstream(config_.coord_file, std::ios::out | std::ios::binary);
+
+        const auto sizeOfCoord = sizeof std::get<0>(globalCoords[0]);
+        const LPFloat zero = 0.0;
+        for (auto coord : globalCoords){
+          fout.write( reinterpret_cast<const char*>(&std::get<0>(coord)), sizeOfCoord );
+          fout.write( reinterpret_cast<const char*>(&std::get<1>(coord)), sizeOfCoord );
+          //TODO: geographer expects 3 dimensional coordinates for the binary reader
+          fout.write( reinterpret_cast<const char*>(&zero), sizeOfCoord );
+        }
+        fout.close();
+      }
+    }//if (rank == ROOT) 
+
+  }//GatherPrint, 2D
+
+
+#elif DIM_3D
+
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
+    throw std::logic_error("Not implemented, should not be called. For the 2D generators recompile with KAGEN_DIMENSION_2D=ON");
+  }
+//---------------------------
+// 3D
+//
+
+  int GatherCoords( identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, std::vector<std::tuple<LPFloat, LPFloat, LPFloat>> &globalCoords, std::vector<SInt> &globalIds) const {
     // Exchange local dist
     PEID rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -243,100 +333,8 @@ class GeneratorIO {
   }
 
 
-  //2D point output
-  void GatherPrint2D(identity<std::tuple<LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
-    PEID rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    std::vector<std::tuple<LPFloat, LPFloat>> globalCoords; 
-    std::vector<SInt> globalIds; 
-
-    Timer t;
-    double local_time = 0.0;
-    double total_time = 0.0;
-    t.Restart();
-
-    GatherCoords( identity<Edge>(), globalCoords, globalIds);
-
-    local_time = t.Elapsed();
-    MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
-             MPI_COMM_WORLD);
-
-    if (rank == ROOT) {
-
-      std::cout << "time to gather the coordinates: " << total_time << std::endl;
-
-      local_time = 0.0;
-      t.Restart();
-      //checks
-      if( not std::is_sorted(globalIds.begin(), globalIds.end()) ){
-        //throw std::logic_error("ERROR: For some reason, the coordinate indices are not sorted.");
-        std::cout<< "WARNING: indices are not sorted, will sort now" << std::endl;
-
-        //zip again to sort and remove duplicates
-        std::vector<std::tuple<LPFloat, LPFloat, SInt>> forSort;
-        for( unsigned long i=0; i<globalCoords.size(); i++){
-          forSort.push_back( std::tuple<LPFloat, LPFloat, SInt>( std::get<0>(globalCoords[i]), std::get<1>(globalCoords[i]), globalIds[i] ) );
-        }
-
-        std::stable_sort( forSort.begin(), forSort.end(), []( auto x1, auto x2){
-          return std::get<2>(x1) < std::get<2>(x2);
-        });
-    
-        std::cout<< __FILE__ << ", " << __LINE__ << ": before removing duplicates: " << forSort.size() << std::endl;
-        forSort.erase( unique(forSort.begin(), forSort.end()), forSort.end() );
-        std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << forSort.size() << std::endl;
-
-        //unzip
-        SInt newSize = forSort.size();
-        globalIds.resize( newSize, 0);
-        globalCoords.resize( newSize,std::tuple<LPFloat, LPFloat>(0.0, 0.0) );
-        for ( unsigned int i=0; i<newSize; i++ ){
-          auto edge = forSort[i];
-          globalCoords[i] = std::tuple<LPFloat, LPFloat>( std::get<0>(edge) , std::get<1>(edge) );
-          globalIds[i] = std::get<2>(edge);
-        }
-      }
-
-      //sanity check
-      for( unsigned int i=0; i<globalIds.size()-1; i++){
-        if( globalIds[i]==globalIds[i+1]){
-          throw std::logic_error("ERROR: vertex id " + std::to_string(globalIds[i]) + " is duplicated.");
-        }
-      }
-      local_time = t.Elapsed();
-      std::cout << "time to sort and check: " << local_time << std::endl;
-      //local_time = 0.0;
-      //t.Restart();
-
-      if (not binary){
-        // Output edges     
-        FILE* fout = fopen(config_.coord_file.c_str(), "w+");
-        for (auto coord : globalCoords){
-          fprintf(fout, "%f %f\n", std::get<0>(coord) , std::get<1>(coord) );
-        }
-        fclose(fout);
-      }else{
-        //for binary files we enforce the header
-        auto fout = std::fstream(config_.coord_file, std::ios::out | std::ios::binary);
-
-        const auto sizeOfCoord = sizeof std::get<0>(globalCoords[0]);
-        const LPFloat zero = 0.0;
-        for (auto coord : globalCoords){
-          fout.write( reinterpret_cast<const char*>(&std::get<0>(coord)), sizeOfCoord );
-          fout.write( reinterpret_cast<const char*>(&std::get<1>(coord)), sizeOfCoord );
-          //TODO: geographer expects 3 dimensional coordinates for the binary reader
-          fout.write( reinterpret_cast<const char*>(&zero), sizeOfCoord );
-        }
-        fout.close();
-      }
-    }//if (rank == ROOT) 
-
-  }//GatherPrint, 2D
-
 //3D point output
-  void GatherPrint3D(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
+  void GatherPrint(identity<std::tuple<LPFloat, LPFloat, LPFloat, SInt>>, [[maybe_unused]] bool binary=false) const {
     PEID rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -425,7 +423,9 @@ class GeneratorIO {
 
   }//GatherPrint, 2D
 
-
+#else
+  throw std::runtime_error(" must specify one dimension using the KAGEN_DIMENSION_2D at compile time");
+#endif
 
   //TODO: consider making it non-const. It would save some time
   //for the edges
@@ -462,12 +462,18 @@ class GeneratorIO {
                 ROOT, MPI_COMM_WORLD);
 
     if (rank == ROOT) {
+
+      //add all edges (i, i+1) to force graph to be connected
+      for( unsigned int i=0; i<config_.n-1; i++){
+        edges.push_back( std::tuple<SInt, SInt>(i, i+1) );
+      }
+
       // Sort edges and remove duplicates
       std::cout<< __FILE__ << ", " << __LINE__ << ": num edges before removing duplicates: " << edges.size() << std::endl;        
       std::sort(std::begin(edges), std::end(edges));
       edges.erase(unique(edges.begin(), edges.end()), edges.end());
       std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << edges.size() << std::endl;
-
+      
       // Output edges
       if ( not binary){
         FILE* fout = fopen(config_.output_file.c_str(), "w+");

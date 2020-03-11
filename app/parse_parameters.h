@@ -213,7 +213,7 @@ void ParseParameters(int argn, char **argv,
     }
 
     if(rank==ROOT and generator_config.r!=newR){
-      out << "%% Setting/overwriting r to " << generator_config.r << std::endl;
+      out << "%% Setting/overwriting r to " << newR << std::endl;
     }
     generator_config.r = newR;
   }

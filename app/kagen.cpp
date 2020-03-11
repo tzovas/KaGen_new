@@ -122,7 +122,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
              MPI_COMM_WORLD);
 
 #ifdef OUTPUT_EDGES
-  if (rank == ROOT){
+  if (rank == ROOT and config.output_format=="binary"){
     //file to store some data about the output files
     std::string headerFile = config.output_file+".info";
     auto fheader = std::fstream(headerFile, std::fstream::app);
