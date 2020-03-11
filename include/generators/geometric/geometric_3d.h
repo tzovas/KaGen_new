@@ -85,7 +85,7 @@ class Geometric3D {
   // std::vector<std::vector<Vertex>> vertices_;
   google::dense_hash_map<SInt, std::vector<Vertex>> vertices_;
 
-  GeneratorIO<std::tuple<LPFloat, LPFloat, LPFloat, SInt>> point_io_;
+  GeneratorIO<Vertex> point_io_;
 
   virtual SInt computeNumberOfCells() const { return 1; };
 

@@ -19,7 +19,6 @@
 #include "generator_config.h"
 #include "generator_io.h"
 #include "geometry.h"
-// #include "morton2D.h"
 #include "rng_wrapper.h"
 #include "mersenne.h"
 #include "hash.hpp"
@@ -87,7 +86,7 @@ class Geometric2D {
   // std::vector<std::vector<Vertex>> vertices_;
   google::dense_hash_map<SInt, std::vector<Vertex>> vertices_;
 
-  GeneratorIO<std::tuple<LPFloat, LPFloat, SInt>> point_io_;
+  GeneratorIO<Vertex> point_io_;
 
   void InitDatastructures() {
     // Chunk distribution
@@ -318,7 +317,7 @@ class Geometric2D {
     x = id % chunks_per_dim_;
     y = id / chunks_per_dim_;
   }
-};
+}; //class Geometric2D
 
 }
 #endif

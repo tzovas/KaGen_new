@@ -209,7 +209,7 @@ void ParseParameters(int argn, char **argv,
     if(generator_config.generator == "rgg_2d"){
        newR = std::sqrt( (double) generator_config.avg_degree /(3.1415*generator_config.n) );
     }else if (generator_config.generator == "rgg_3d"){
-        newR = std::pow( (double) 3*generator_config.avg_degree /(4*3.1415*generator_config.n), 3);
+        newR = std::cbrt( (double) 3*generator_config.avg_degree /(4*3.1415*generator_config.n) );
     }
 
     if(rank==ROOT and generator_config.r!=newR){
