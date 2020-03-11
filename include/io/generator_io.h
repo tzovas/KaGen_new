@@ -282,7 +282,7 @@ class GeneratorIO {
 
     //break vector of tuples into two vectors
     unsigned int lSize = NumEdges();
-    std::vector<std::tuple<LPFloat, LPFloat>> localCoords(lSize);
+    std::vector<std::tuple<LPFloat, LPFloat, LPFloat>> localCoords(lSize);
     std::vector<SInt> localIds(lSize);
     assert( lSize==edges_.size() );
 
@@ -347,7 +347,7 @@ class GeneratorIO {
     double total_time = 0.0;
     t.Restart();
 
-    GatherCoords3D( identity<Edge>(), globalCoords, globalIds);
+    GatherCoords( identity<Edge>(), globalCoords, globalIds);
 
     local_time = t.Elapsed();
     MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,
