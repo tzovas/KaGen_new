@@ -110,6 +110,8 @@ class RGG2D : public Geometric2D {
         }
       }
     }
+    
+    io_.removeDuplicates();
   }
 
   void GenerateGridEdges(const SInt first_chunk_id, const SInt first_cell_id,

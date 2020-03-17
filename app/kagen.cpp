@@ -108,7 +108,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
 
   if (rank == ROOT){
     std::cout   << "done generating graph, time: " << total_time
-                << ", total number of edges: " << globalNumEdges/2
+                << ", total number of edges: " << globalNumEdges
                 << ", write output..." << std::endl;
   }
   
@@ -136,7 +136,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
 int main(int argn, char **argv) {
   // Init MPI
   MPI_Init(&argn, &argv);
-  PEID rank=0, size=0;
+  PEID rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 

@@ -91,6 +91,18 @@ class GeneratorIO {
   SInt NumEdges() const { 
     return edges_.size() > 0 ? edges_.size() : local_num_edges_/2; 
   }
+  
+  void removeDuplicates(){
+    PEID rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+     // Sort edges and remove duplicates locally
+    std::cout<< __FILE__ << ", " << __LINE__ << ", " << rank << ": local num edges before removing duplicates: " << edges_.size() << std::endl;
+    std::sort(std::begin(edges_), std::end(edges_));
+    edges_.erase(unique(edges_.begin(), edges_.end()), edges_.end());
+    std::vector<Edge>(edges_).swap(edges_); //shrink to fit
+    std::cout<< __FILE__ << ", " << __LINE__ << ", " << rank << ": after: " << edges_.size() << std::endl;
+
+  }
 
  private:
   PGeneratorConfig &config_;
@@ -441,7 +453,7 @@ class GeneratorIO {
     std::vector<int> num_edges(size);
     SInt lSize = NumEdges();
     MPI_Gather(&lSize, 1, MPI_INT,
-               num_edges.data(), 1, MPI_UNSIGNED_LONG_LONG,
+               num_edges.data(), 1, MPI_INT,
                ROOT, MPI_COMM_WORLD);
     SInt current_displ = 0;
     SInt total_num_edges = 0;
@@ -631,7 +643,8 @@ class GeneratorIO {
 
     fclose(fout);
   };
-};
+
+};//class GeneratorIO 
 
 }
 #endif

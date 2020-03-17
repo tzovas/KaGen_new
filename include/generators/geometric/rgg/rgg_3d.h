@@ -132,6 +132,7 @@ class RGG3D : public Geometric3D {
         }
       }
     }
+    io_.removeDuplicates();
   }
 
   void GenerateGridEdges(const SInt first_chunk_id, const SInt first_cell_id,
