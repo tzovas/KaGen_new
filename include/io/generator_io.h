@@ -438,18 +438,26 @@ class GeneratorIO {
     // Gather number of edges for each PE
     std::vector<int> displ(size);
     std::vector<int> num_edges(size);
-    int lSize = NumEdges();
+    SInt lSize = NumEdges();
     MPI_Gather(&lSize, 1, MPI_INT,
                num_edges.data(), 1, MPI_INT, 
                ROOT, MPI_COMM_WORLD);
-    int current_displ = 0;
-    int total_num_edges = 0;
+    SInt current_displ = 0;
+    SInt total_num_edges = 0;
     if (rank == ROOT) {
       for (SInt i = 0; i < num_edges.size(); ++i) {
         displ[i] = current_displ;
         total_num_edges += num_edges[i];
         current_displ = total_num_edges;
       }
+    }
+
+    if (rank == ROOT){
+        std::vector<Edge> edges_tmp;
+        std::cout<< "rank "<< rank <<": about to request a vector of size " <<total_num_edges << std::endl;
+        if( total_num_edges>edges_tmp.max_size() ){
+            std::cout<< "ERROR: size is larger than the maximum allowed vector size: " << edges_tmp.max_size() << std::endl;
+        }
     }
 
     // Gather actual edges
