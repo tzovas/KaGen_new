@@ -12,7 +12,7 @@
 #include "sys/types.h"
 #include "sys/sysinfo.h"
 
-unsigned long printRamUsage(){
+unsigned long printMemUsage(){
 
     struct sysinfo memInfo;
 
@@ -41,9 +41,6 @@ unsigned long printRamUsage(){
     unsigned long long freeRam = memInfo.freeram;
     freeRam *= memInfo.mem_unit;
 
-    unsigned long long sharedRam = memInfo.sharedram;
-    sharedRam *= memInfo.mem_unit;    
-    
     unsigned long long buffRam = memInfo.bufferram;
     buffRam *= memInfo.mem_unit; 
 
@@ -75,8 +72,7 @@ unsigned long printRamUsage(){
     std::cout<< rank <<  ": totalPhysMem: " << (totalPhysMem/mb) << 
                 " MB, physMemUsed: " << physMemUsed/mb << 
                 " MB, free ram: " << freeRam/mb <<
-                " MB, shared ram: " << sharedRam/mb <<
-                " MB, buffered   ram: " << buffRam/mb <<
+                " MB, buffered ram: " << buffRam/mb <<
                 " MB, I am using: " << getValue()/kb << " MB" << std::endl;
 
     return freeRam;

@@ -441,7 +441,7 @@ class GeneratorIO {
     std::vector<int> num_edges(size);
     SInt lSize = NumEdges();
     MPI_Gather(&lSize, 1, MPI_INT,
-               num_edges.data(), 1, MPI_INT, 
+               num_edges.data(), 1, MPI_UNSIGNED_LONG_LONG,
                ROOT, MPI_COMM_WORLD);
     SInt current_displ = 0;
     SInt total_num_edges = 0;
@@ -456,10 +456,8 @@ class GeneratorIO {
     if (rank == ROOT){
         std::vector<Edge> edges_tmp;
         std::cout<< "rank "<< rank <<": about to request a vector of size " <<total_num_edges << std::endl;
-        std::cout<< "the vector will need at least " <<  ((double) total_num_edges)*sizeof(Edge)/(1024*1024) << " MBs of memory" << std::endl;
-        if( total_num_edges>edges_tmp.max_size() ){
-            std::cout<< "ERROR: size is larger than the maximum allowed vector size: " << edges_tmp.max_size() << std::endl;
-        }
+        std::cout<< "possible ERROR: requested size is larger than the maximum allowed vector size: " << edges_tmp.max_size() << std::endl;
+        std::cout<< "the vector will need at least " << total_num_edges*((double) sizeof(Edge))/(1024*1024) << " MBs of memory" << std::endl;
     }
 
     // Gather actual edges
@@ -467,12 +465,13 @@ class GeneratorIO {
     MPI_Type_vector(1, 2, 0, MPI_LONG, &MPI_EDGE);
     MPI_Type_commit(&MPI_EDGE);
     std::vector<Edge> edges(total_num_edges); //this is needed because method is const
+
     MPI_Gatherv(edges_.data(), lSize, MPI_EDGE,
                 edges.data(), num_edges.data(), displ.data(), MPI_EDGE, 
                 ROOT, MPI_COMM_WORLD);
 
     //memory consumption
-    printRamUsage();
+    printMemUsage();
 
     if (rank == ROOT) {
 

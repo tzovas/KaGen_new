@@ -136,7 +136,7 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
 int main(int argn, char **argv) {
   // Init MPI
   MPI_Init(&argn, &argv);
-  PEID rank, size;
+  PEID rank=0, size=0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
