@@ -455,6 +455,7 @@ class GeneratorIO {
     if (rank == ROOT){
         std::vector<Edge> edges_tmp;
         std::cout<< "rank "<< rank <<": about to request a vector of size " <<total_num_edges << std::endl;
+        std::cout<< "the vector will need at least" <<  total_num_edges*sizeof(Edge)/(1024*1024) << " MBs of memory" << std::endl;
         if( total_num_edges>edges_tmp.max_size() ){
             std::cout<< "ERROR: size is larger than the maximum allowed vector size: " << edges_tmp.max_size() << std::endl;
         }
@@ -480,6 +481,7 @@ class GeneratorIO {
       std::cout<< __FILE__ << ", " << __LINE__ << ": num edges before removing duplicates: " << edges.size() << std::endl;        
       std::sort(std::begin(edges), std::end(edges));
       edges.erase(unique(edges.begin(), edges.end()), edges.end());
+      std::vector<int>(edges).swap(edges); //shrink to fit
       std::cout<< __FILE__ << ", " << __LINE__ << ": after: " << edges.size() << std::endl;
       
       // Output edges
