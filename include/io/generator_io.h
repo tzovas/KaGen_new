@@ -462,6 +462,7 @@ class GeneratorIO {
         displ[i] = current_displ;
         total_num_edges += num_edges[i];
         current_displ = total_num_edges;
+        std::cout<<"# will receive " << num_edges[i] << " edges from " << i << ", prefixSum= " << total_num_edges << std::endl;
       }
     }
 
@@ -481,7 +482,8 @@ class GeneratorIO {
     if (rank == ROOT){
         std::cout<< "### memory before gather " << std::endl;
     }
-
+    
+    MPI_Barrier(MPI_COMM_WORLD);
     //memory consumption
     printMemUsage();
 
