@@ -48,6 +48,7 @@ class Geometric3D {
     for (SInt i = local_chunk_start_; i < local_chunk_end_; i++)
       ComputeChunk(i);
 
+    std::cout<< rank_ << ": chucks computed, will generate them" << std::endl;
     // Generate local chunks and edges
     for (SInt i = local_chunk_start_; i < local_chunk_end_; i++)
       GenerateChunk(i);
@@ -235,9 +236,11 @@ class Geometric3D {
     
     //locally, points are not duplicated
     //point_io_.removeDuplicates();
-    
+    std::cout<< rank_ << ": vertices generated" << std::endl;
+
     // Generate edges and vertices on demand
     GenerateEdges(chunk_row, chunk_column, chunk_depth);
+    std::cout<< rank_ << ": edges generated" << std::endl;
   }
 
   virtual void GenerateCells(const SInt chunk_id) {

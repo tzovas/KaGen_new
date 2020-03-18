@@ -80,7 +80,7 @@ class GeneratorIO {
     local_num_edges_++;
   }
 
-  void OutputEdges( bool binary=false) const { 
+  void OutputEdges( [[maybe_unused]] bool binary=false) const { 
 #ifdef SINGLE_LIST
     GatherPrint(identity<Edge>(), binary);
 #else
