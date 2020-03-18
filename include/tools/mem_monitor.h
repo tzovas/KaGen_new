@@ -11,6 +11,7 @@
 
 #include "sys/types.h"
 #include "sys/sysinfo.h"
+#include <cstring>
 
 unsigned long printMemUsage(){
 
