@@ -87,10 +87,16 @@ void RunGenerator(PGeneratorConfig &config, const PEID rank,
   double total_time = 0.0;
   t.Restart();
 
+  if (rank == ROOT){
+    std::cout<< "### before calling generator" << std::endl;
+  }
   // Chunk distribution
   Generator gen(config, rank, cb);
   gen.Generate();
 
+  if (rank == ROOT){
+    std::cout<< "### generator finished" << std::endl;
+  }
   // Output
   local_time = t.Elapsed();
   MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_MAX, ROOT,

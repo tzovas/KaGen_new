@@ -232,6 +232,10 @@ class Geometric3D {
     // Generate nodes, gather neighbors and add edges
     GenerateCells(chunk_id);
     for (SInt i = 0; i < cells_per_chunk_; ++i) GenerateVertices(chunk_id, i);
+    
+    //locally, points are not duplicated
+    //point_io_.removeDuplicates();
+    
     // Generate edges and vertices on demand
     GenerateEdges(chunk_row, chunk_column, chunk_depth);
   }

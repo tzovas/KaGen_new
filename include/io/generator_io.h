@@ -478,6 +478,13 @@ class GeneratorIO {
     MPI_Type_commit(&MPI_EDGE);
     std::vector<Edge> edges(total_num_edges); //this is needed because method is const
 
+    if (rank == ROOT){
+        std::cout<< "### memory before gather " << std::endl;
+    }
+
+    //memory consumption
+    printMemUsage();
+
     MPI_Gatherv(edges_.data(), lSize, MPI_EDGE,
                 edges.data(), num_edges.data(), displ.data(), MPI_EDGE, 
                 ROOT, MPI_COMM_WORLD);
@@ -565,6 +572,7 @@ class GeneratorIO {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     MPI_Barrier(MPI_COMM_WORLD);
+//std::cout << rank << ": " << edges_.size() << std::endl;
     for (PEID i = 0; i < size; i++) {
       if (i == rank) {
         std::string mode = i == 0 ? "w+" : "a";
