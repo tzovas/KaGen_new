@@ -157,8 +157,11 @@ int main(int argn, char **argv) {
 
   if (rank == ROOT){
     OutputParameters(generator_config, rank, size);
+    char machineChar[255];
+    gethostname(machineChar, 255);
     std::cout<<"%%Calling command: " << callingCommand <<std::endl;
     std::cout<<"%%Called with " << size << " MPI processes" << std::endl;
+    std::cout<<"%%running in " << machineChar << std::endl;
   }
 
   // Statistics
