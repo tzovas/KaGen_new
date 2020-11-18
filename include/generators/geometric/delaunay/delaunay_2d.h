@@ -452,7 +452,10 @@ private:
         touches = true;
       }
 
-      if(touches){
+      // both vertices need to be in original chunk
+      bool contained = (!tria.is_infinite(v1) &&  !(v1->info() & COPY_FLAG)) && (!tria.is_infinite(v2) &&  !(v2->info() & COPY_FLAG));
+
+      if(contained){
           cb_((v1->info() & COPY_FLAG) ? v1->info() - COPY_FLAG : v1->info(), (v2->info() & COPY_FLAG) ? v2->info() - COPY_FLAG : v2->info());
           cb_((v2->info() & COPY_FLAG) ? v2->info() - COPY_FLAG : v2->info(), (v1->info() & COPY_FLAG) ? v1->info() - COPY_FLAG : v1->info());
 #ifdef OUTPUT_EDGES
