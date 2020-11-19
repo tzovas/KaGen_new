@@ -4,10 +4,10 @@ This document describes changes and adaptations to [KaGen](https://github.com/se
 are necessary to output large graphs and their coordinates.
 
 KaGen can produce random delaunay triangulation (rdg) and random geometric (rgg) graphs.
-Some tools like Geographer, also require the coordinates of these graphs but KaGen does not stores
-them. Also, it had some problems when the graphs needed to be written to a file because, although the 
-graph creation is done in parallel, the graph was gathered in one PE and this PE writes the graph.
-But this approach has memory problems when the graphs are too big.
+Some tools, like Geographer, also require the coordinates of these graphs but KaGen does not stores
+them. Also, it has memory issues when the graphs needed to be written to a file become too big.
+Although the graph creation is done in parallel,
+the graph is gathered in one PE and which writes the graph into a file. 
 
 For this purpose, we added functionality for writting the coordinates in a file and adapted the
 way the graph is stored when using multiple PEs.
@@ -68,6 +68,19 @@ The `output_format` parameter is not given and the graph will be written in text
 METIS graph format.
 
 > mpirun -n 16 kagen -output_dir /scratch/usr/meshes -n 26 -gen rgg_3d
+
+
+## Future plans
+
+We noticed that the rdg generator creates some "long" edges that (probably) do not belong to a 
+delaunay triangulation. These are edge between vertices that are located in the opposite sides of
+the triangulation (all vertices/points are created in the unit square) but are still connected 
+with an edge.
+Most likely, this should be fixed by the KaGen developers. This is posted as an issuein
+github/KaGen, see [discussion](https://github.com/sebalamm/KaGen/issues/5).
+
+On our side, the first issue is to provide a proper class and methods to store and write
+the coordinates in a file when needed.
 
 
 
