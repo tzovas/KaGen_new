@@ -23,8 +23,6 @@ A problem is that the user needs to specify the dimension at compile time using 
 `DKAGEN_DIMENSION_2D=ON/OFF` for 2D or 3D. This way, only 2 or 3 dimensional graph can be 
 created per installation.
 
-**TODO**: create a class dedicated for the coordinates and do not abuse `GatherPrint`. This
-will avoid the need to specify the supported number of dimensions at compile time.
 
 ## Examples
 
@@ -79,8 +77,9 @@ with an edge.
 Most likely, this should be fixed by the KaGen developers. This is posted as an issuein
 github/KaGen, see [discussion](https://github.com/sebalamm/KaGen/issues/5).
 
-On our side, the first issue is to provide a proper class and methods to store and write
-the coordinates in a file when needed.
+On our side, the main issue is to provide a proper class and methods to store and write
+the coordinates in a file for the geometric graphs and do not abuse `GatherPrint`. 
+This will avoid the need to specify the supported number of dimensions at compile time..
 
 
 
