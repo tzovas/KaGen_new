@@ -1,7 +1,8 @@
 # Changes and additions for KaGen_hu
 
 This document describes changes and adaptations to [KaGen](https://github.com/sebalamm/KaGen) that
-are necessary to output large graphs and their coordinates.
+are necessary to output large geometric graphs and their coordinates. Generators that do not have
+coordinates (e.g. Barabasi-Albert) are unaffected by the changes.
 
 KaGen can produce random delaunay triangulation (rdg) and random geometric (rgg) graphs.
 Some tools, like Geographer, also require the coordinates of these graphs but KaGen does not stores
@@ -45,6 +46,9 @@ Then call
 
 For 3D graph you must set `-DKAGEN_DIMENSION_2D=OFF`; this implies that 3D is ON.
 
+More details can be found in the original KaGenr repository. 
+You can find sparsehash [here](https://github.com/sparsehash/sparsehash).
+
 ### Running the generator
 
 New parameter:
@@ -70,17 +74,16 @@ METIS graph format.
 
 ## Future plans
 
-We noticed that the rdg generator creates some "long" edges that (probably) do not belong to a 
+We noticed that the rdg generator creates some "long" edges that (probably) do not belong to a 2D
 delaunay triangulation. These are edge between vertices that are located in the opposite sides of
 the triangulation (all vertices/points are created in the unit square) but are still connected 
-with an edge.
-Most likely, this should be fixed by the KaGen developers. This is posted as an issuein
+with an edge. 
+Most likely, these are edges connecting vertices on a torus created by the generator's
+periodic boundary condition.
+Not sure if this is actuallly an error and should be fixed by the KaGen developers. 
+This is posted as an issue in
 github/KaGen, see [discussion](https://github.com/sebalamm/KaGen/issues/5).
 
 On our side, the main issue is to provide a proper class and methods to store and write
 the coordinates in a file for the geometric graphs and do not abuse `GatherPrint`. 
 This will avoid the need to specify the supported number of dimensions at compile time..
-
-
-
-
