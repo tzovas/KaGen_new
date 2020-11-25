@@ -1,13 +1,13 @@
 /*******************************************************************************
  * include/tools/mem_monitor.h
  *
- * Copyright (C) 2016-2017 Sebastian Lamm <lamm@ira.uka.de>
- *
  * All rights reserved. Published under the BSD-2 license in the LICENSE file.
  ******************************************************************************/
 
 #ifndef _MEM_MONITOR_H_
 #define _MEM_MONITOR_H_
+
+#ifdef __GNUC__ //apple clang does not have the sys/* libraries
 
 #include "sys/types.h"
 #include "sys/sysinfo.h"
@@ -78,5 +78,13 @@ unsigned long printMemUsage(){
 
     return freeRam;
 }
+
+#else //for non-gnuc compilers
+
+unsigned long printMemUsage(){
+    std::cout<< "Memory usage for non-gcc compilers is not supported " <<std::endl;
+}
+
+#endif //check for apple clang
 
 #endif
