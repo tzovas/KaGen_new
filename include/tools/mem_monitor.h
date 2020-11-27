@@ -7,7 +7,7 @@
 #ifndef _MEM_MONITOR_H_
 #define _MEM_MONITOR_H_
 
-#ifdef __GNUC__ //apple clang does not have the sys/* libraries
+#ifndef __APPLE__ //macOS does not have the sys/* libraries
 
 #include "sys/types.h"
 #include "sys/sysinfo.h"
